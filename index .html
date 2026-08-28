@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff646b" />
+  <title>YOUWIN — WinGo</title>
+  <link rel="stylesheet" href="styles.css?v=12" />
+  <style>
+    html, body {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+      margin: 0 !important;
+    }
+    .app-frame, .app-shell, #app, .screen, .game-content, .bet-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+    }
+    .game-content { padding: 8px 10px 16px !important; }
+    .round-tabs {
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 4px !important;
+      width: 100% !important;
+    }
+    .round-tab { min-width: 0 !important; overflow: hidden !important; padding: 6px 0 !important; }
+    .round-tab b { font-size: 10px !important; }
+    .round-tab.active { background: linear-gradient(180deg,#ff8a92,#ff5d64) !important; color:#fff !important; }
+    .round-tab.active b, .round-tab.active small { color:#fff !important; }
+    .round-status {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) !important;
+      width: 100% !important;
+      overflow: hidden !important;
+      padding: 10px !important;
+    }
+    .round-copy, .round-timer { min-width: 0 !important; overflow: hidden !important; }
+    .round-timer strong { display: block !important; font-size: 22px !important; }
+    .timer-digits { display: none !important; }
+    .pick-row {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 6px !important;
+      width: 100% !important;
+    }
+    .pick-btn {
+      min-width: 0 !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      padding: 8px 2px !important;
+      border-radius: 12px !important;
+    }
+    .pick-btn small { width: auto !important; display: inline !important; margin-left: 4px !important; }
+    .number-grid {
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 6px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    button.number-ball {
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 44px !important;
+      height: 44px !important;
+      min-width: 0 !important;
+      padding: 0 !important;
+      margin: 0 auto !important;
+      border: 0 !important;
+      aspect-ratio: auto !important;
+      border-radius: 50% !important;
+      font-size: 15px !important;
+    }
+    .multiplier-row {
+      display: grid !important;
+      grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+      gap: 4px !important;
+      width: 100% !important;
+    }
+    .multiplier { min-width: 0 !important; padding: 7px 0 !important; font-size: 10px !important; }
+    .size-row {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 0 !important;
+      width: 100% !important;
+      border-radius: 20px !important;
+      overflow: hidden !important;
+    }
+    .size-pick { min-width: 0 !important; border-radius: 0 !important; }
+    .result-row { max-width: 100% !important; overflow-x: auto !important; }
+    .bottom-nav { width: 100% !important; max-width: 100% !important; left: 0 !important; transform: none !important; }
+    .demo-pill { font-size: 9px !important; padding: 4px 6px !important; }
+    .bet-heading h2 { font-size: 18px !important; }
+    .lock-banner { font-size: 12px !important; padding: 8px !important; }
+    .qty-input {
+      width: 72px !important; height: 34px !important; text-align: center !important;
+      font-weight: 800 !important; font-size: 16px !important; border: 1px solid #e4e8f0 !important;
+      border-radius: 8px !important; background: #fff !important; color: #1c2430 !important;
+    }
+    .result-overlay { align-items: center; }
+    .result-overlay .result-card {
+      width: min(340px, calc(100% - 28px)); border-radius: 28px; padding: 22px 18px 16px;
+      text-align: center; color: #fff; position: relative;
+    }
+    .result-overlay.is-win .result-card {
+      background: linear-gradient(180deg, #ff8b6a 0%, #ff5d72 55%, #f0486a 100%);
+      box-shadow: 0 18px 40px rgba(240, 72, 106, .35);
+    }
+    .result-overlay.is-lose .result-card {
+      background: linear-gradient(180deg, #2a2a2e, #111114);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+    }
+    .result-crest { font-size: 36px; margin-bottom: 6px; }
+    .result-card h3 { font-size: 22px; line-height: 1.2; margin: 0 0 12px; color: #fff; }
+    .lottery-line { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 12px; }
+    .result-meta { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .result-chip { padding: 4px 9px; border-radius: 20px; font-size: 12px; font-weight: 800; background: rgba(255,255,255,.22); color: #fff; }
+    .bonus-slip {
+      background: #fff7e8; color: #c4482a; border-radius: 10px; padding: 12px 10px; margin: 8px 10px 12px;
+    }
+    .result-overlay.is-lose .bonus-slip { background: #2b2b30; color: #eee; }
+    .bonus-slip small { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+    .bonus-slip b { font-size: 26px; }
+    .issue-id { font-size: 11px; opacity: .9; word-break: break-all; }
+    .auto-shut { font-size: 11px; opacity: .8; margin-top: 8px; }
+    .withdraw-modal { position: fixed; inset: 0; z-index: 30; }
+    .withdraw-sheet {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: min(430px, 100%); height: 100%; background: #f4f6fb; overflow: auto; z-index: 1;
+    }
+    .withdraw-head {
+      display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+      background: #fff; position: sticky; top: 0; z-index: 2;
+    }
+    .withdraw-head h2 { font-size: 17px; font-weight: 800; flex: 1; text-align: center; margin-right: 28px; }
+    .wd-back { width: 32px; height: 32px; font-size: 28px; line-height: 1; color: #1c2430; }
+    .withdraw-body { padding: 14px 16px 32px; display: grid; gap: 8px; }
+    .wd-warn {
+      background: #fff1f2; color: #e94b55; border-radius: 14px; padding: 12px 14px;
+      font-size: 13px; font-weight: 700;
+    }
+    .wd-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #5b6478; margin-top: 8px; }
+    .wd-ico { color: #ff646b; }
+    .wd-input, .wd-select {
+      width: 100%; background: #fff; border: 0; border-radius: 12px; padding: 14px 12px;
+      font-size: 15px; outline: none; color: #1c2430; box-shadow: 0 1px 0 #eef1f6;
+    }
+    .wd-select {
+      appearance: none;
+      background: linear-gradient(90deg, #ff7a82, #ff8a9a);
+      color: #fff; font-weight: 800;
+    }
+    .wd-select option { color: #1c2430; }
+    .wd-status { min-height: 18px; color: #e94b55; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="app-frame">
+  <section class="auth-gate" id="authGate" aria-labelledby="authTitle">
+    <div class="auth-frame">
+      <header class="auth-hero">
+        <div class="auth-topline">
+          <button class="auth-back" type="button" aria-label="Back">‹</button>
+          <div class="brand brand-on-red"><span class="brand-disc"><span>YW</span><i></i></span><strong>YOU<span>WIN</span></strong></div>
+          <span class="auth-language">🇺🇸 <b>EN</b></span>
+        </div>
+        <div class="auth-intro">
+          <h1 id="authTitle">Log in</h1>
+          <p id="authSubtitle">Please log in with your phone number or email<br>If you forget your password, please contact customer service</p>
+        </div>
+      </header>
+      <div class="auth-body">
+        <div class="auth-tabs" role="tablist" aria-label="Login method">
+          <button class="auth-tab active" type="button" data-auth-method="phone"><span class="auth-method-icon">▰</span><b>Phone Number</b></button>
+          <button class="auth-tab" type="button" data-auth-method="email"><span class="auth-method-icon">✉</span><b>Email</b></button>
+        </div>
+        <form class="auth-form" id="authForm">
+          <label class="auth-label" for="authIdentity"><span class="auth-label-icon">▰</span><span id="identityLabel">Phone number</span></label>
+          <div class="identity-input-row">
+            <div class="country-code" id="countryCode">+91 <span>⌄</span></div>
+            <input id="authIdentity" name="identity" type="tel" inputmode="tel" autocomplete="username" placeholder="Please enter the phone number" required />
+          </div>
+          <label class="auth-label" for="authPassword"><span class="auth-label-icon">▣</span>Password</label>
+          <div class="password-input-row">
+            <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Password" required />
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">◉</button>
+          </div>
+          <div class="auth-options">
+            <label><input type="checkbox" id="rememberAuth" checked><span class="auth-radio"></span>Remember password</label>
+            <button type="button" id="forgotAuth">Forgot password?</button>
+          </div>
+          <p class="auth-status" id="authStatus" role="status" aria-live="polite"></p>
+          <button class="auth-submit" type="submit" id="authSubmit">Log in</button>
+          <button class="auth-register-switch" type="button" id="authRegisterSwitch">Register</button>
+          <p class="auth-disclaimer">Please keep your login details safe</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <div class="app-shell" id="mainApp" hidden>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="i-headset" viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><path d="M4 14a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2v1Z"/><path d="M20 14a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2v1Z"/><path d="M17 18c-.8 1.1-2 1.7-3.5 1.7H12"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.8-3L3 11"/><path d="M3 6v5h5"/><path d="M4 13a8 8 0 0 0 14.8 3L21 13"/><path d="M21 18v-5h-5"/></symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol>
+      <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m18 13-6 6-6-6"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></symbol>
+      <symbol id="i-activity" viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M8 8h8M8 12h8M8 16h5"/><path d="M17.5 3v3h-3"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></symbol>
+      <symbol id="i-gift" viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7H8.5A2.5 2.5 0 1 1 11 4.5L12 7Zm0 0h3.5A2.5 2.5 0 1 0 13 4.5L12 7Z"/></symbol>
+      <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 6.5h15a2 2 0 0 1 2 2V19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="M3 8V5a2 2 0 0 1 2-2h12"/><path d="M16 13h5"/><circle cx="16" cy="13" r=".8" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+      <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M4 5h16v4a2 2 0 0 0 0 6v4H4v-4a2 2 0 0 0 0-6V5Z"/><path d="M9 8v8M13 8v8M17 8v8"/></symbol>
+      <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 10h4l5-4v12l-5-4H4z"/><path d="M17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="m4 7 8 6 8-6"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    </svg>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <main id="app">
+      <section class="screen active" id="homeScreen" aria-labelledby="homeTitle">
+        <header class="topbar topbar-light">
+          <div class="brand" aria-label="YOUWIN home">
+            <span class="brand-disc"><span>YW</span><i></i></span>
+            <strong>YOU<span>WIN</span></strong>
+          </div>
+          <div class="top-actions">
+            <button class="round-icon" data-action="support" aria-label="Customer support"><svg class="icon"><use href="#i-headset"></use></svg></button>
+            <button class="round-icon" data-action="history" aria-label="Game history"><svg class="icon"><use href="#i-history"></use></svg></button>
+          </div>
+        </header>
+        <div class="screen-content home-content">
+          <section class="campaign-banner" aria-label="Welcome offer">
+            <div class="campaign-copy">
+              <span class="eyebrow">WELCOME TO YOUWIN</span>
+              <h1>One game.<br><b>More chances.</b></h1>
+              <p>WinGo 30 sec rounds<br>with live period results.</p>
+              <button class="mini-cta" data-open="game">Play WinGo <svg class="icon"><use href="#i-chevron"></use></svg></button>
+            </div>
+            <div class="campaign-art" aria-hidden="true">
+              <div class="sun-burst"></div>
+              <div class="coin coin-a">₹</div><div class="coin coin-b">Y</div><div class="coin coin-c">★</div>
+              <div class="ticket-stack"><span>WIN</span><b>GO</b></div>
+              <span class="spark spark-a">✦</span><span class="spark spark-b">✧</span><span class="spark spark-c">✦</span>
+            </div>
+          </section>
+          <section class="balance-card home-balance">
+            <div class="balance-main">
+              <span class="balance-label"><span class="coin-dot">₹</span> Wallet balance</span>
+              <div class="balance-value">₹<span data-wallet>0.00</span><button class="inline-icon" data-action="refresh" aria-label="Refresh balance"><svg class="icon"><use href="#i-refresh"></use></svg></button></div>
+              <span class="balance-helper">Available balance</span>
+            </div>
+            <div class="balance-actions">
+              <button class="action-btn withdraw" data-action="withdraw"><svg class="icon"><use href="#i-arrow-up"></use></svg><span>Withdraw</span></button>
+              <button class="action-btn deposit" data-action="deposit"><svg class="icon"><use href="#i-arrow-down"></use></svg><span>Deposit</span></button>
+            </div>
+          </section>
+          <section class="section-block wingo-only-block">
+            <div class="section-heading">
+              <div>
+                <span class="section-kicker">LOTTERY</span>
+                <h2 id="homeTitle">WinGo</h2>
+              </div>
+              <span class="live-pill"><i></i> Live</span>
+            </div>
+            <article class="wingo-hero" id="recommendedGames">
+              <div class="wingo-hero-glow" aria-hidden="true"></div>
+              <div class="wingo-hero-top">
+                <span class="wingo-chip">YOUWIN original</span>
+                <span class="wingo-chip ghost">Fair draw</span>
+              </div>
+              <div class="wingo-hero-body">
+                <div class="wingo-hero-copy">
+                  <h3>WIN GO</h3>
+                  <p>Colour · Number · Big / Small</p>
+                  <div class="wingo-odds">
+                    <span><i class="od od-g"></i>1.98x</span>
+                    <span><i class="od od-v"></i>5x</span>
+                    <span><i class="od od-n"></i>8x</span>
+                  </div>
+                </div>
+                <div class="wingo-hero-balls" aria-hidden="true">
+                  <span class="gloss-ball ball-9">9</span>
+                  <span class="gloss-ball ball-4">4</span>
+                  <span class="gloss-ball ball-0">0</span>
+                </div>
+              </div>
+              <div class="wingo-modes">
+                <button type="button" class="wingo-mode" data-open="game" data-mode="30s"><b>30s</b><small>WinGo</small></button>
+                <button type="button" class="wingo-mode" data-open="game" data-mode="1m"><b>1 Min</b><small>WinGo</small></button>
+                <button type="button" class="wingo-mode" data-open="game" data-mode="3m"><b>3 Min</b><small>WinGo</small></button>
+                <button type="button" class="wingo-mode" data-open="game" data-mode="5m"><b>5 Min</b><small>WinGo</small></button>
+              </div>
+            </article>
+          </section>
+          <section class="trust-strip"><span class="trust-icon">✓</span><div><strong>Fair play</strong><span>Official live results. Play colour, number or Big / Small.</span></div><svg class="icon"><use href="#i-chevron"></use></svg></section>
+        </div>
+      </section>
+
+      <section class="screen" id="gameScreen" aria-labelledby="gameTitle">
+        <header class="game-topbar">
+          <button class="back-button" data-action="back" aria-label="Back"><svg class="icon"><use href="#i-back"></use></svg></button>
+          <div class="brand brand-on-red"><span class="brand-disc"><span>YW</span><i></i></span><strong>YOU<span>WIN</span></strong></div>
+          <div class="top-actions"><button class="round-icon" data-action="support" aria-label="Customer support"><svg class="icon"><use href="#i-headset"></use></svg></button><button class="round-icon" data-action="history" aria-label="Game history"><svg class="icon"><use href="#i-history"></use></svg></button></div>
+        </header>
+        <div class="screen-content game-content">
+          <section class="game-wallet-card">
+            <div class="game-wallet-balance"><span>₹<span data-wallet>0.00</span></span><button class="inline-icon light" data-action="refresh" aria-label="Refresh balance"><svg class="icon"><use href="#i-refresh"></use></svg></button><small><span class="wallet-icon"><svg class="icon"><use href="#i-wallet"></use></svg></span> Wallet balance</small></div>
+            <div class="game-wallet-actions"><button data-action="withdraw">Withdraw</button><button data-action="deposit">Deposit</button></div>
+          </section>
+          <div class="notice-bar"><svg class="icon"><use href="#i-speaker"></use></svg><p>If you have not received your withdrawal within <b>3 days</b>, please contact support.</p><button data-action="detail">✦ Detail</button></div>
+          <div class="round-tabs" role="tablist" aria-label="WinGo modes" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;">
+            <button class="round-tab active" data-mode="30s"><span class="round-orb red-orb">◷</span><b>WinGo</b><small>30 sec</small></button>
+            <button class="round-tab" data-mode="1m"><span class="round-orb grey-orb">◷</span><b>WinGo 1</b><small>Min</small></button>
+            <button class="round-tab" data-mode="3m"><span class="round-orb grey-orb">◷</span><b>WinGo 3</b><small>Min</small></button>
+            <button class="round-tab" data-mode="5m"><span class="round-orb grey-orb">◷</span><b>WinGo 5</b><small>Min</small></button>
+          </div>
+          <section class="round-status" id="roundStatus" aria-live="polite">
+            <div class="how-play"><button data-action="how"><svg class="icon"><use href="#i-ticket"></use></svg> How to play</button><span class="status-line"></span></div>
+            <div class="round-copy"><span id="roundModeName">WIN GO 30 SEC</span><b id="roundMessage">Betting is open</b><small id="roundResult">Waiting for first result</small></div>
+            <div class="round-timer">
+              <span>TIME REMAINING</span>
+              <strong id="timer">00:30</strong>
+              <div class="timer-digits" id="timerDigits" hidden></div>
+              <small id="period">—</small>
+            </div>
+            <div class="admin-set-banner" id="adminSetBanner" hidden>
+              <span>Next result locked</span>
+              <strong id="adminSetPreview">7 Green</strong>
+            </div>
+          </section>
+          <section class="bet-box" id="gameTitle">
+            <div class="bet-heading">
+              <div><span class="section-kicker">MAKE YOUR PICK</span><h2 id="betGameName">WinGo 30 sec</h2></div>
+              <span class="demo-pill">LIVE</span>
+            </div>
+            <div class="pick-row color-picks" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;">
+              <button class="pick-btn green" data-pick="Green"><span class="pick-swatch"></span>Green<small>1.98x</small></button>
+              <button class="pick-btn violet" data-pick="Violet"><span class="pick-swatch"></span>Violet<small>5x</small></button>
+              <button class="pick-btn red" data-pick="Red"><span class="pick-swatch"></span>Red<small>1.98x</small></button>
+            </div>
+            <div class="pick-label"><span>Or choose a number</span><small>0–9 · 8x</small></div>
+            <div class="number-grid" id="numberGrid" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%;max-width:100%;">
+              <button class="number-ball violet-ball" data-pick="0" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">0</button>
+              <button class="number-ball green-ball" data-pick="1" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">1</button>
+              <button class="number-ball red-ball" data-pick="2" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">2</button>
+              <button class="number-ball green-ball" data-pick="3" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">3</button>
+              <button class="number-ball red-violet-ball" data-pick="4" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">4</button>
+              <button class="number-ball violet-ball" data-pick="5" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">5</button>
+              <button class="number-ball red-ball" data-pick="6" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">6</button>
+              <button class="number-ball green-ball" data-pick="7" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">7</button>
+              <button class="number-ball red-ball" data-pick="8" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">8</button>
+              <button class="number-ball green-violet-ball" data-pick="9" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">9</button>
+            </div>
+            <div class="pick-label stake-label"><span>Multiplier</span><small id="stakeValue">₹1</small></div>
+            <div class="multiplier-row" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;width:100%;">
+              <button class="multiplier active" data-stake="1">X1</button>
+              <button class="multiplier" data-stake="5">X5</button>
+              <button class="multiplier" data-stake="10">X10</button>
+              <button class="multiplier" data-stake="20">X20</button>
+              <button class="multiplier" data-stake="50">X50</button>
+              <button class="multiplier" data-stake="100">X100</button>
+            </div>
+            <div class="size-row"><button class="size-pick big" data-pick="Big">Big<small>1.98x</small></button><button class="size-pick small" data-pick="Small">Small<small>1.98x</small></button></div>
+            <div class="lock-banner" id="lockBanner">Last 5 seconds · betting locked</div>
+            <div class="selection-summary"><div><span>Selected pick</span><strong id="selectedPick">None yet</strong></div><button class="place-bet" id="placeBet">Place pick · ₹1</button></div>
+          </section>
+          <section class="recent-results">
+            <div class="hist-tabs" role="tablist">
+              <button type="button" class="active" data-hist="game">Game history</button>
+              <button type="button" data-hist="chart">Chart</button>
+              <button type="button" data-hist="mine">My game</button>
+            </div>
+            <div id="histGame">
+              <div class="result-row" id="resultRow"></div>
+              <table class="hist-table">
+                <thead><tr><th>Period</th><th>Number</th><th>Big/Small</th></tr></thead>
+                <tbody id="histBody"></tbody>
+              </table>
+            </div>
+            <div id="histChart" hidden>
+              <div class="chart-row" id="chartRow"></div>
+            </div>
+            <div id="histMine" hidden>
+              <div id="mineList"></div>
+            </div>
+          </section>
+          <p class="safe-note">Play responsibly.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="accountScreen" aria-labelledby="accountTitle">
+        <header class="account-hero">
+          <div class="account-topline"><button class="round-icon" data-action="back" aria-label="Back"><svg class="icon"><use href="#i-back"></use></svg></button><span class="hero-heading">My account</span><button class="round-icon" data-action="settings" aria-label="Settings">•••</button></div>
+          <div class="profile-row">
+            <div class="avatar" aria-hidden="true"><svg viewBox="0 0 100 100"><defs><linearGradient id="skin" x1="0" x2="1"><stop offset="0" stop-color="#f7c7b2"/><stop offset="1" stop-color="#e89b91"/></linearGradient><linearGradient id="hair" x1="0" x2="1"><stop offset="0" stop-color="#141a22"/><stop offset="1" stop-color="#5a332c"/></linearGradient></defs><circle cx="50" cy="50" r="49" fill="#fbd4c6"/><path d="M17 49C12 22 27 7 51 7c29 0 38 20 31 46-4-12-13-18-24-20-10 11-26 16-41 16Z" fill="url(#hair)"/><ellipse cx="50" cy="55" rx="25" ry="30" fill="url(#skin)"/><path d="M34 52c4-3 8-3 12 0M54 52c4-3 8-3 12 0" fill="none" stroke="#4e3c43" stroke-width="2" stroke-linecap="round"/><circle cx="42" cy="54" r="2" fill="#33415a"/><circle cx="60" cy="54" r="2" fill="#33415a"/><path d="M45 68c4 3 8 3 12 0" fill="none" stroke="#bd5864" stroke-width="2" stroke-linecap="round"/><path d="M23 39c-2 20 0 41 14 52H20C9 72 10 49 17 31Z" fill="url(#hair)"/><path d="M77 38c3 15 4 35-10 53h13c11-20 10-42 0-54Z" fill="url(#hair)"/></svg></div>
+            <div class="profile-meta"><div class="profile-name"><button class="name-edit" type="button" data-action="edit-name" aria-label="Change display name"><span id="profileName">YOUWIN USER</span> <span>🌸</span></button><b>◉ VIP2</b></div><div class="uid-chip">UID <i></i> <strong id="profileUid">—</strong><button data-action="copy" aria-label="Copy user ID"><svg class="icon"><use href="#i-copy"></use></svg></button></div><span class="last-login" id="lastLogin">Last login: —</span></div>
+          </div>
+        </header>
+        <div class="screen-content account-content">
+          <section class="account-balance-card"><div><span class="account-balance-label">Total balance</span><strong>₹<span data-wallet>0.00</span></strong></div><button class="enter-wallet" data-action="wallet">Enter wallet <svg class="icon"><use href="#i-chevron"></use></svg></button></section>
+          <section class="quick-wallet-grid"><button data-action="wallet"><span class="quick-icon pink-wallet"><svg class="icon"><use href="#i-wallet"></use></svg></span>ARWallet</button><button data-action="deposit"><span class="quick-icon orange-wallet"><svg class="icon"><use href="#i-arrow-down"></use></svg></span>Deposit</button><button data-action="withdraw"><span class="quick-icon blue-wallet"><svg class="icon"><use href="#i-arrow-up"></use></svg></span>Withdraw</button><button data-action="vip"><span class="quick-icon mint-vip">V</span>VIP</button></section>
+          <section class="account-grid"><button data-action="history"><span class="list-icon blue-list"><svg class="icon"><use href="#i-ticket"></use></svg><i>$</i></span><span><strong>Game History</strong><small>My game history</small></span></button><button data-action="transactions"><span class="list-icon green-list"><svg class="icon"><use href="#i-ticket"></use></svg><i>⇄</i></span><span><strong>Transaction</strong><small>My transaction history</small></span></button><button data-action="deposit-history"><span class="list-icon pink-list"><svg class="icon"><use href="#i-ticket"></use></svg></span><span><strong>Deposit</strong><small>My deposit history</small></span></button><button data-action="withdraw-history"><span class="list-icon orange-list"><svg class="icon"><use href="#i-wallet"></use></svg><i>✓</i></span><span><strong>Withdraw</strong><small>My withdraw history</small></span></button></section>
+          <section class="settings-list">
+            <button data-action="notifications"><span class="settings-icon pink"><svg class="icon"><use href="#i-mail"></use></svg></span><span>Notification</span><b class="notification-count">39</b><svg class="icon chevron"><use href="#i-chevron"></use></svg></button>
+            <button data-action="gifts"><span class="settings-icon pink"><svg class="icon"><use href="#i-gift"></use></svg></span><span>Gifts</span><svg class="icon chevron"><use href="#i-chevron"></use></svg></button>
+            <button data-action="stats"><span class="settings-icon coral"><svg class="icon"><use href="#i-chart"></use></svg></span><span>Game statistics</span><svg class="icon chevron"><use href="#i-chevron"></use></svg></button>
+            <button data-action="language"><span class="settings-icon coral globe"><svg class="icon"><use href="#i-globe"></use></svg></span><span>Language</span><strong>English</strong><svg class="icon chevron"><use href="#i-chevron"></use></svg></button>
+          </section>
+          <div class="account-footer"><span>YOUWIN v2.4.1</span><span>•</span><span>Fair play</span><button class="signout" data-action="logout">Sign out</button></div>
+        </div>
+      </section>
+
+      <section class="screen" id="activityScreen" aria-labelledby="activityTitle">
+        <header class="simple-topbar"><button class="round-icon dark" data-action="back" aria-label="Back"><svg class="icon"><use href="#i-back"></use></svg></button><h1 id="activityTitle">My activity</h1><button class="round-icon dark" data-action="filter" aria-label="Filter">≡</button></header>
+        <div class="screen-content utility-content">
+          <div class="utility-intro"><span class="utility-icon activity-utility"><svg class="icon"><use href="#i-activity"></use></svg></span><h2>Your play history</h2><p>Keep an eye on your rounds and recent picks.</p></div>
+          <div id="activityList"></div>
+          <div class="empty-tip"><svg class="icon"><use href="#i-ticket"></use></svg><p>Your recent game records appear here.</p></div>
+        </div>
+      </section>
+
+      <section class="screen" id="promotionScreen" aria-labelledby="promotionTitle">
+        <header class="simple-topbar promo-topbar"><button class="round-icon dark" data-action="back" aria-label="Back"><svg class="icon"><use href="#i-back"></use></svg></button><h1 id="promotionTitle">Promotions</h1><button class="round-icon dark" data-action="support" aria-label="Help">?</button></header>
+        <div class="screen-content utility-content">
+          <div class="promotion-hero"><span class="promo-star">✦</span><div><small>WELCOME REWARD</small><h2>Get ₹500<br><b>in daily perks</b></h2><p>Explore the interface, collect badges and keep your streak going.</p></div><span class="big-coin">₹</span></div>
+          <div class="perk-card"><span class="perk-number">01</span><div><strong>Daily check-in</strong><p>Open the app every day to keep your streak.</p></div><button data-action="claim">Claim</button></div>
+          <div class="perk-card"><span class="perk-number two">02</span><div><strong>Invite a friend</strong><p>Share the good vibes with your game-night crew.</p></div><button data-action="share">Share</button></div>
+          <div class="safe-card"><svg class="icon"><use href="#i-lock"></use></svg><div><strong>Account security</strong><p>Never share your password or OTP with anyone.</p></div></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" id="bottomNav" aria-label="Primary navigation">
+      <button class="nav-item active" data-nav="home"><svg class="icon"><use href="#i-home"></use></svg><span>Home</span></button>
+      <button class="nav-item" data-nav="activity"><svg class="icon"><use href="#i-activity"></use></svg><span>Activity</span><i class="nav-dot"></i></button>
+      <button class="nav-item reward-nav" data-action="claim"><span class="reward-orbit"><span>₹</span></span><span>Get ₹500</span></button>
+      <button class="nav-item" data-nav="promotion"><svg class="icon"><use href="#i-gift"></use></svg><span>Promotion</span></button>
+      <button class="nav-item" data-nav="account"><svg class="icon"><use href="#i-user"></use></svg><span>Account</span></button>
+    </nav>
+  </div>
+
+  <div class="bet-modal" id="betModal" hidden>
+    <div class="bet-modal-backdrop" data-action="close-bet"></div>
+    <section class="bet-sheet" role="dialog" aria-modal="true" aria-labelledby="betModalTitle">
+      <div class="bet-sheet-head">
+        <button class="bet-close" data-action="close-bet" aria-label="Close bet slip"><svg class="icon"><use href="#i-close"></use></svg></button>
+        <h2 id="betModalTitle">WinGo 30 sec</h2>
+        <div class="bet-selection" id="betModalSelection">Select Green</div>
+        <div class="bet-odds" id="betModalOdds">Odds 1:2</div>
+      </div>
+      <div class="bet-sheet-body">
+        <div class="bet-control-row"><span>Balance</span><div class="balance-choice-row"><button class="balance-choice active" data-balance="1">1</button><button class="balance-choice" data-balance="10">10</button><button class="balance-choice" data-balance="100">100</button><button class="balance-choice" data-balance="1000">1000</button></div></div>
+        <div class="bet-control-row"><span>Quantity</span><div class="quantity-control"><button data-action="bet-minus" aria-label="Decrease quantity">−</button><input class="qty-input" id="betQuantity" type="number" inputmode="numeric" min="1" step="1" value="1" aria-label="Bet quantity" /><button data-action="bet-plus" aria-label="Increase quantity">+</button></div></div>
+        <div class="bet-multiplier-row"><button class="bet-multiplier active" data-bet-multiplier="1">X1</button><button class="bet-multiplier" data-bet-multiplier="5">X5</button><button class="bet-multiplier" data-bet-multiplier="10">X10</button><button class="bet-multiplier" data-bet-multiplier="20">X20</button><button class="bet-multiplier" data-bet-multiplier="50">X50</button><button class="bet-multiplier" data-bet-multiplier="100">X100</button></div>
+        <label class="agree-row"><input type="checkbox" id="agreeRules" checked><span class="fake-check">✓</span><span>I agree</span><button type="button" data-action="pre-sale">《Pre-sale rules》</button></label>
+      </div>
+      <div class="bet-sheet-footer"><button class="bet-cancel" data-action="close-bet">Cancel</button><button class="bet-confirm" id="confirmBet">Total amount ₹1.00</button></div>
+    </section>
+  </div>
+
+  <div class="name-modal" id="nameModal" hidden>
+    <div class="name-backdrop" data-action="close-name"></div>
+    <section class="name-sheet" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+      <button class="modal-close" data-action="close-name" aria-label="Close"><svg class="icon"><use href="#i-close"></use></svg></button>
+      <span class="modal-icon purple"><svg class="icon"><use href="#i-user"></use></svg></span>
+      <h2 id="nameTitle">Change display name</h2>
+      <p>Choose the name shown on this device.</p>
+      <input class="name-input" id="nameInput" type="text" maxlength="20" autocomplete="nickname" placeholder="Enter your name" />
+      <button class="name-save" data-action="save-name">Save name</button>
+      <small>Saved locally on this device</small>
+    </section>
+  </div>
+
+  <div class="deposit-modal" id="depositModal" hidden>
+    <div class="deposit-backdrop" data-action="close-deposit"></div>
+    <section class="deposit-sheet" role="dialog" aria-modal="true" aria-labelledby="depositTitle">
+      <header class="deposit-head"><button class="modal-close" data-action="close-deposit" aria-label="Close deposit"><svg class="icon"><use href="#i-close"></use></svg></button><span class="modal-icon"><svg class="icon"><use href="#i-arrow-down"></use></svg></span><h2 id="depositTitle">Deposit funds</h2><p>Scan the QR and submit your UTR/reference below.</p></header>
+      <div class="deposit-body">
+        <label class="deposit-field-label" for="depositAmount">Deposit amount <small>min ₹1</small></label>
+        <div class="deposit-amount-input"><span>₹</span><input id="depositAmount" type="number" min="1" step="1" value="100" inputmode="numeric" /></div>
+        <div class="deposit-quick-row"><button class="deposit-amount-choice active" data-deposit-amount="100">₹100</button><button class="deposit-amount-choice" data-deposit-amount="500">₹500</button><button class="deposit-amount-choice" data-deposit-amount="1000">₹1,000</button><button class="deposit-amount-choice" data-deposit-amount="2000">₹2,000</button></div>
+        <div class="qr-panel">
+          <div class="qr-image-wrap">
+            <svg class="qr-svg" viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" aria-label="UPI QR">
+              <rect width="29" height="29" fill="#fff"/>
+              <g fill="#1c2430">
+                <rect x="2" y="2" width="7" height="7"/><rect x="3" y="3" width="5" height="5" fill="#fff"/><rect x="4" y="4" width="3" height="3"/>
+                <rect x="20" y="2" width="7" height="7"/><rect x="21" y="3" width="5" height="5" fill="#fff"/><rect x="22" y="4" width="3" height="3"/>
+                <rect x="2" y="20" width="7" height="7"/><rect x="3" y="21" width="5" height="5" fill="#fff"/><rect x="4" y="22" width="3" height="3"/>
+                <rect x="11" y="3" width="2" height="2"/><rect x="14" y="2" width="2" height="3"/><rect x="17" y="4" width="2" height="2"/>
+                <rect x="11" y="7" width="3" height="2"/><rect x="16" y="7" width="2" height="2"/><rect x="12" y="11" width="2" height="2"/>
+                <rect x="3" y="11" width="2" height="2"/><rect x="6" y="13" width="3" height="2"/><rect x="10" y="14" width="2" height="3"/>
+                <rect x="14" y="13" width="3" height="2"/><rect x="18" y="11" width="2" height="2"/><rect x="21" y="12" width="3" height="2"/>
+                <rect x="24" y="10" width="2" height="3"/><rect x="11" y="18" width="2" height="2"/><rect x="14" y="17" width="2" height="3"/>
+                <rect x="17" y="19" width="3" height="2"/><rect x="21" y="16" width="2" height="2"/><rect x="24" y="18" width="3" height="2"/>
+                <rect x="20" y="21" width="2" height="3"/><rect x="23" y="24" width="3" height="2"/><rect x="16" y="23" width="2" height="3"/>
+                <rect x="12" y="22" width="2" height="2"/><rect x="11" y="25" width="3" height="2"/>
+              </g>
+            </svg>
+          </div>
+          <div class="upi-details"><span>PAY USING UPI</span><strong>9332521547@yespop</strong><button data-action="copy-upi">Copy UPI ID</button></div>
+        </div>
+        <label class="deposit-field-label" for="utrInput">UTR / reference number <small>required for matching</small></label>
+        <input class="utr-input" id="utrInput" type="text" inputmode="numeric" placeholder="Enter UTR after payment" autocomplete="off" />
+        <button class="deposit-submit" id="submitDeposit" data-action="submit-deposit">Submit deposit</button>
+        <p class="deposit-note"><svg class="icon"><use href="#i-lock"></use></svg> Paste the UTR. If it matches an issued code, balance is added at once.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="withdraw-modal" id="withdrawModal" hidden>
+    <div class="deposit-backdrop" data-action="close-withdraw"></div>
+    <section class="withdraw-sheet" role="dialog" aria-modal="true" aria-labelledby="withdrawTitle">
+      <header class="withdraw-head">
+        <button class="wd-back" data-action="close-withdraw" aria-label="Back">‹</button>
+        <h2 id="withdrawTitle">Add a bank account number</h2>
+      </header>
+      <div class="withdraw-body">
+        <p class="wd-warn">ⓘ To ensure the safety of your funds, please bind your bank account</p>
+        <label class="wd-label" for="wdBank"><span class="wd-ico">🏛</span> Choose a bank</label>
+        <select id="wdBank" class="wd-select">
+          <option value="">Please select a bank</option>
+          <option>State Bank of India</option>
+          <option>HDFC Bank</option>
+          <option>ICICI Bank</option>
+          <option>Axis Bank</option>
+          <option>Punjab National Bank</option>
+          <option>Bank of Baroda</option>
+          <option>Canara Bank</option>
+          <option>Union Bank of India</option>
+          <option>Kotak Mahindra Bank</option>
+          <option>Yes Bank</option>
+          <option>IDFC FIRST Bank</option>
+          <option>Indian Bank</option>
+          <option>Bank of India</option>
+          <option>Central Bank of India</option>
+          <option>UCO Bank</option>
+          <option>Bandhan Bank</option>
+        </select>
+        <label class="wd-label" for="wdName"><span class="wd-ico">👤</span> Full recipient's name</label>
+        <input id="wdName" class="wd-input" type="text" autocomplete="name" placeholder="Please enter recipient name" />
+        <label class="wd-label" for="wdAccount"><span class="wd-ico">💳</span> Bank account number</label>
+        <input id="wdAccount" class="wd-input" type="text" inputmode="numeric" placeholder="Please enter your bank account number" />
+        <label class="wd-label" for="wdPhone"><span class="wd-ico">📱</span> Phone number</label>
+        <input id="wdPhone" class="wd-input" type="tel" inputmode="tel" placeholder="Please enter your phone number" />
+        <label class="wd-label" for="wdEmail"><span class="wd-ico">✉</span> Mail</label>
+        <input id="wdEmail" class="wd-input" type="email" placeholder="please input your email" />
+        <label class="wd-label" for="wdIfsc"><span class="wd-ico">⌕</span> IFSC code</label>
+        <input id="wdIfsc" class="wd-input" type="text" placeholder="Please enter IFSC code" maxlength="11" />
+        <label class="wd-label" for="wdAmount"><span class="wd-ico">₹</span> Withdraw amount</label>
+        <input id="wdAmount" class="wd-input" type="number" min="1" step="1" inputmode="numeric" placeholder="Enter amount" />
+        <p class="wd-status" id="wdStatus"></p>
+        <button class="deposit-submit" type="button" data-action="submit-withdraw">Submit</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+  <section class="modal-sheet" id="walletModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-handle"></div><button class="modal-close" data-action="close-modal" aria-label="Close"><svg class="icon"><use href="#i-close"></use></svg></button>
+    <span class="modal-icon"><svg class="icon"><use href="#i-wallet"></use></svg></span><h2 id="modalTitle">Wallet</h2><p class="modal-description">Deposit and withdraw from your YOUWIN wallet.</p>
+    <div class="modal-balance"><span>Current balance</span><strong>₹<span data-wallet>0.00</span></strong></div>
+    <div class="modal-actions"><button class="withdraw" data-action="withdraw-modal">Withdraw</button><button class="deposit" data-action="deposit-modal">Deposit</button></div>
+    <p class="modal-footnote"><svg class="icon"><use href="#i-lock"></use></svg> No real payments are processed.</p>
+  </section>
+
+  <div class="how-modal" id="howModal" hidden>
+    <div class="modal-backdrop inner" data-action="close-how"></div>
+    <section class="how-card">
+      <button class="modal-close" data-action="close-how" aria-label="Close"><svg class="icon"><use href="#i-close"></use></svg></button>
+      <span class="modal-icon purple"><svg class="icon"><use href="#i-ticket"></use></svg></span>
+      <h2>How to play WinGo</h2>
+      <ol>
+        <li>Pick a colour, number or Big / Small.</li>
+        <li>Choose a stake multiplier.</li>
+        <li>Place your pick before the last 5 seconds.</li>
+        <li>When the period ends, the result number and colour are shown.</li>
+      </ol>
+      <button class="primary-full" data-action="close-how">Got it</button>
+      <small>Results are drawn at the end of each period</small>
+    </section>
+  </div>
+
+  <div class="result-overlay" id="resultOverlay" hidden data-action="close-result">
+    <div class="result-card" id="resultCard">
+      <div class="result-crest" aria-hidden="true">🏆</div>
+      <h3 id="resultTitle">Congratulations on your winning</h3>
+      <div class="lottery-line">
+        <span>lottery result</span>
+        <div class="result-meta" id="resultMeta"></div>
+      </div>
+      <div class="bonus-slip">
+        <small>bonus</small>
+        <b id="resultBonus">₹0.00</b>
+      </div>
+      <p class="issue-id" id="resultPeriodLabel">Issue:</p>
+      <p class="auto-shut">2s auto shut off</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/game-core.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3211097dd539aa7',t:'MTc4Nzg5NjUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

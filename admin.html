@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1218" />
+  <title>YOUWIN Admin — Period control</title>
+  <link rel="stylesheet" href="admin.css?v=17" />
+</head>
+<body>
+  <section class="login-shell" id="adminGate">
+    <form class="login-card" id="adminLogin">
+      <div class="login-brand"><span class="disc">YW</span><strong>YOU<span>WIN</span></strong></div>
+      <h1>Admin panel</h1>
+      <p>Only an admin can open this page. Sign in to control the next period result number and colour on the live WinGo board.</p>
+      <label class="field"><span>Username</span><input id="adminUser" autocomplete="username" placeholder="Admin username" required /></label>
+      <label class="field"><span>Password</span><input id="adminPass" type="password" autocomplete="current-password" placeholder="Admin password" required /></label>
+      <button class="login-btn" type="submit">Enter control room</button>
+      <p class="login-status" id="adminStatus"></p>
+      <p class="hint">This panel is not linked from the player app. Open <b>admin.html</b> directly.</p>
+    </form>
+  </section>
+
+  <main class="wrap" id="adminApp" hidden>
+    <header class="topbar">
+      <div>
+        <div class="kicker">CONTROL ROOM</div>
+        <h1>Period result control</h1>
+        <p>Lock the next WinGo number and colour. The player site reads this before each period ends.</p>
+      </div>
+      <div class="top-actions">
+        <a class="chip-btn" href="index.html" target="_blank" rel="noopener">Open player site</a>
+        <button class="chip-btn" id="adminLogout" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="kicker">LIVE CLOCK</div>
+        <h2>Choose a mode, then set the result</h2>
+        <div class="mode-grid" id="modeGrid"></div>
+        <div class="period-box">
+          <div class="stat"><span>CURRENT PERIOD</span><b id="curPeriod">—</b></div>
+          <div class="stat"><span>TIME LEFT</span><b id="curTime">00:00</b></div>
+          <div class="stat"><span>NEXT PERIOD</span><b id="nextPeriod">—</b></div>
+          <div class="stat"><span>STATUS</span><b id="curStatus">Open</b></div>
+        </div>
+
+        <div class="target-row">
+          <button class="target active" type="button" data-target="current">
+            <b>Next draw</b>
+            <small id="targetNextLabel">This period — shown when the clock hits 00:00</small>
+          </button>
+          <button class="target" type="button" data-target="next">
+            <b>Following period</b>
+            <small>Use if this period is already locked</small>
+          </button>
+        </div>
+
+        <div class="kicker">RESULT NUMBER</div>
+        <div class="numbers" id="numberGrid"></div>
+        <div class="kicker">COLOUR</div>
+        <div class="colors">
+          <button class="col green" type="button" data-color="green">Green</button>
+          <button class="col violet" type="button" data-color="violet">Violet</button>
+          <button class="col red" type="button" data-color="red">Red</button>
+        </div>
+
+        <div class="preview">
+          <div class="preview-ball n7" id="previewBall">7</div>
+          <div>
+            <small>LOCKED RESULT PREVIEW</small>
+            <b id="previewText">7 · Green · Big</b>
+            <div id="previewBadges"></div>
+          </div>
+        </div>
+
+        <button class="lock-btn" id="lockBtn" type="button">Send 7 · Green to WinGo</button>
+        <button class="ghost-btn" id="forceBtn" type="button" style="margin-top:8px">Show on WinGo now</button>
+        <button class="ghost-btn" id="clearBtn" type="button" style="margin-top:8px">Clear queued result</button>
+        <p class="lock-status" id="lockStatus">Pick a number, then send it. Keep WinGo open in another tab of this same browser.</p>
+        <p class="note">Colour follows the number: 1/3/7 green, 2/6/8 red, 0/5 violet, 4 red+violet, 9 green+violet. Open player + admin in the same browser.</p>
+      </section>
+
+      <aside>
+        <section class="panel">
+          <div class="kicker">QUEUE</div>
+          <h2>Queued admin results</h2>
+          <div class="queue" id="queueList"></div>
+        </section>
+        <section class="panel" style="margin-top:16px">
+          <div class="kicker">SETTLED</div>
+          <h2>Recent period results</h2>
+          <div class="history" id="historyList"></div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="panel risk-panel">
+      <div class="kicker">RISK CONTROL</div>
+      <h2>Player spend this period — opposite result suggested</h2>
+      <div class="risk-modes" id="riskModes">
+        <button type="button" class="risk-mode active" data-mode="30s"><b>30s</b><small>WinGo</small></button>
+        <button type="button" class="risk-mode" data-mode="1m"><b>60s</b><small>1 Min</small></button>
+        <button type="button" class="risk-mode" data-mode="3m"><b>180s</b><small>3 Min</small></button>
+        <button type="button" class="risk-mode" data-mode="5m"><b>300s</b><small>5 Min</small></button>
+      </div>
+      <p class="risk-sub" id="riskSub">Pick a round length, then watch live spend for that game.</p>
+      <div class="risk-stats">
+        <div class="risk-stat"><span>ON THE TABLE</span><b id="riskTotal">₹0.00</b></div>
+        <div class="risk-stat"><span>BETS / PLAYERS</span><b id="riskCount">0 / 0</b></div>
+        <div class="risk-stat"><span>IF YOU SET SUGGESTED</span><b id="riskPayout">₹0.00</b></div>
+        <div class="risk-stat"><span>HOUSE KEEPS</span><b id="riskKeep">₹0.00</b></div>
+      </div>
+      <div class="risk-grid">
+        <div>
+          <div class="kicker">COLOUR &amp; SIZE SPEND</div>
+          <div id="riskBars"></div>
+          <div class="kicker" style="margin-top:14px">NUMBER SPEND</div>
+          <div class="risk-nums" id="riskNums"></div>
+        </div>
+        <div class="suggest-card" id="suggestCard">
+          <small>SUGGESTED OPPOSITE</small>
+          <div class="suggest-head">
+            <div class="preview-ball n2" id="sugBall">—</div>
+            <div>
+              <b id="sugText">Waiting for bets</b>
+              <div id="sugBadges"></div>
+            </div>
+          </div>
+          <p class="suggest-why" id="sugWhy">When players load Green, Red, Big, Small or a number, this panel recommends the opposite / cheapest result for the house.</p>
+          <button class="lock-btn" id="applySuggest" type="button">Use this number</button>
+          <button class="ghost-btn" id="sendSuggest" type="button" style="margin-top:8px">Send suggested result to WinGo</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel deposits-panel">
+      <div class="kicker">DEPOSITS</div>
+      <h2>Confirm UTR — other payments wait for Approve</h2>
+      <p class="risk-sub">A generated UTR with the matching amount credits at once. Any other UTR stays pending until you Approve.</p>
+      <div class="user-table-wrap">
+        <table class="user-table">
+          <thead><tr><th>Time</th><th>UID</th><th>Amount</th><th>UTR</th><th>Status</th><th></th></tr></thead>
+          <tbody id="depositTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel utr-panel">
+      <div class="kicker">UTR CODES</div>
+      <h2>Generate a UTR for an amount</h2>
+      <p class="risk-sub">Give the player this code. When they paste it with the same amount on Deposit, the wallet is credited at once. Generating a code does not add money.</p>
+      <div class="uid-money">
+        <input id="utrAmount" type="number" min="1" step="1" value="100" />
+        <button class="lock-btn" id="utrGenerate" type="button">Generate UTR</button>
+        <button class="ghost-btn" id="utrCopy" type="button">Copy last UTR</button>
+      </div>
+      <p class="lock-status" id="utrStatus">Enter an amount, then generate.</p>
+      <div class="utr-fresh" id="utrFresh" hidden>
+        <small>LAST GENERATED</small>
+        <b id="utrFreshCode">—</b>
+        <span id="utrFreshAmt"></span>
+      </div>
+      <h2 style="margin-top:18px">Unused</h2>
+      <div class="user-table-wrap">
+        <table class="user-table">
+          <thead><tr><th>UTR</th><th>Amount</th><th>Created</th><th></th></tr></thead>
+          <tbody id="utrUnusedTable"></tbody>
+        </table>
+      </div>
+      <h2 style="margin-top:18px">Used</h2>
+      <div class="user-table-wrap">
+        <table class="user-table">
+          <thead><tr><th>UTR</th><th>Amount</th><th>UID</th><th>Used</th></tr></thead>
+          <tbody id="utrUsedTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel withdraw-panel">
+      <div class="kicker">WITHDRAWALS</div>
+      <h2>Player bank requests — Approve or Reject</h2>
+      <p class="risk-sub">Amount is held when the player submits. Reject refunds the wallet.</p>
+      <div class="user-table-wrap">
+        <table class="user-table">
+          <thead><tr><th>Time</th><th>UID</th><th>Amount</th><th>Bank / Account</th><th>Name / IFSC</th><th>Status</th><th></th></tr></thead>
+          <tbody id="withdrawTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel users-panel">
+      <div class="kicker">ACCOUNTS BY UID</div>
+      <h2>Find a player, add money, or ban</h2>
+      <div class="uid-search">
+        <input id="uidSearch" type="text" inputmode="numeric" placeholder="Enter UID" autocomplete="off" />
+        <button class="lock-btn uid-find" id="uidFind" type="button">Find UID</button>
+      </div>
+      <p class="lock-status" id="uidStatus">Type a UID from the player Account screen.</p>
+      <div class="uid-card" id="uidCard" hidden>
+        <div class="uid-meta">
+          <div><span>UID</span><b id="uUid">—</b></div>
+          <div><span>PHONE / EMAIL</span><b id="uIdentity">—</b></div>
+          <div><span>NAME</span><b id="uName">—</b></div>
+          <div><span>BALANCE</span><b id="uWallet">₹0.00</b></div>
+          <div><span>STATUS</span><b id="uBanned">Active</b></div>
+          <div><span>LAST LOGIN</span><b id="uLogin">—</b></div>
+        </div>
+        <div class="uid-money">
+          <input id="uidAmount" type="number" min="1" step="1" value="100" />
+          <button class="lock-btn" id="uidAdd" type="button">Add money</button>
+          <button class="ghost-btn" id="uidRemove" type="button">Remove money</button>
+          <button class="ghost-btn" id="uidSet" type="button">Set balance</button>
+        </div>
+        <div class="uid-actions">
+          <button class="danger-btn" id="uidBan" type="button">Ban this UID</button>
+          <button class="ghost-btn" id="uidUnban" type="button">Unban</button>
+        </div>
+      </div>
+      <h2 style="margin-top:18px">All accounts</h2>
+      <div class="user-table-wrap">
+        <table class="user-table">
+          <thead><tr><th>UID</th><th>Identity</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+          <tbody id="userTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/game-core.js?v=19"></script>
+  <script src="js/admin.js?v=19"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a320d4336b8723e4',t:'MTc4Nzg5NDAyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
