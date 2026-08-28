@@ -679,6 +679,220 @@
     return rec;
   }
 
+  function authHeaders(isAdmin) {
+    const h = { "Content-Type": "application/json" };
+    const tok = isAdmin ? adminToken : playerToken;
+    if (tok) h.Authorization = "Bearer " + tok;
+    return h;
+  }
+
+  async function api(method, path, body, isAdmin) {
+    const opts = { method, headers: authHeaders(isAdmin), cache: "no-store" };
+    if (body != null) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = { error: "Bad response" };
+    }
+    if (!res.ok && !data.error) data.error = "Request failed";
+    return data;
+  }
+
+  function applyPlay(data) {
+    if (!data || data.error) return data;
+    snap.ready = true;
+    if (data.serverNow) timeOffset = data.serverNow - Date.now();
+    if (data.me) snap.me = data.me;
+    if (data.results) snap.results = data.results;
+    if (data.clocks) snap.clocks = data.clocks;
+    if (data.openBets) snap.openBets = data.openBets;
+    if (data.history) snap.history = data.history;
+    if (data.overrides) snap.overrides = data.overrides;
+    if (data.force !== undefined) snap.force = data.force;
+    try {
+      window.dispatchEvent(new CustomEvent("youwin-store", { detail: { live: true } }));
+    } catch (e) {}
+    return data;
+  }
+
+  function applyAdmin(data) {
+    if (!data || data.error) return data;
+    snap.ready = true;
+    if (data.serverNow) timeOffset = data.serverNow - Date.now();
+    if (data.results) snap.results = data.results;
+    if (data.clocks) snap.clocks = data.clocks;
+    if (data.overrides) snap.overrides = data.overrides;
+    if (data.force !== undefined) snap.force = data.force;
+    if (data.users) snap.users = data.users;
+    if (data.userMap) snap.userMap = data.userMap;
+    if (data.deposits) snap.deposits = data.deposits;
+    if (data.withdrawals) snap.withdrawals = data.withdrawals;
+    if (data.utrCodes) snap.utrCodes = data.utrCodes;
+    if (data.exposure) snap.exposure = data.exposure;
+    try {
+      window.dispatchEvent(new CustomEvent("youwin-store", { detail: { live: true } }));
+    } catch (e) {}
+    return data;
+  }
+
+  function loadTokens() {
+    try {
+      const a = read(KEYS.auth, null);
+      if (a && a.token) playerToken = a.token;
+    } catch (e) {}
+    try {
+      const s = sessionStorage.getItem(KEYS.adminSession);
+      const rec = s ? JSON.parse(s) : null;
+      if (rec && rec.token) adminToken = rec.token;
+    } catch (e) {}
+  }
+
+  loadTokens();
+
+  async function pullPlay() {
+    loadTokens();
+    const data = await api("GET", "/api/play");
+    return applyPlay(data);
+  }
+
+  async function pullAdmin(mode) {
+    loadTokens();
+    const data = await api("GET", "/api/admin/state?mode=" + encodeURIComponent(mode || "30s"), null, true);
+    return applyAdmin(data);
+  }
+
+  async function apiRegister(identity, password) {
+    const data = await api("POST", "/api/register", { identity, password });
+    if (data.token) {
+      playerToken = data.token;
+      write(KEYS.auth, { identity, uid: data.me && data.me.uid, token: data.token, at: Date.now() });
+      if (data.me) {
+        write(KEYS.profile, { name: data.me.name, uid: data.me.uid, lastLogin: data.me.lastLogin });
+        write(KEYS.wallet, Number(data.me.wallet) || 0);
+        snap.me = data.me;
+      }
+    }
+    return data;
+  }
+
+  async function apiLogin(identity, password) {
+    const data = await api("POST", "/api/login", { identity, password });
+    if (data.token) {
+      playerToken = data.token;
+      write(KEYS.auth, { identity, uid: data.me && data.me.uid, token: data.token, at: Date.now() });
+      if (data.me) {
+        write(KEYS.profile, { name: data.me.name, uid: data.me.uid, lastLogin: data.me.lastLogin });
+        write(KEYS.wallet, Number(data.me.wallet) || 0);
+        snap.me = data.me;
+      }
+    }
+    return data;
+  }
+
+  async function apiBet(payload) {
+    const data = await api("POST", "/api/bet", payload);
+    if (data.me) {
+      snap.me = data.me;
+      write(KEYS.wallet, Number(data.me.wallet) || 0);
+    }
+    if (!data.error) await pullPlay();
+    return data;
+  }
+
+  async function apiDeposit(payload) {
+    const data = await api("POST", "/api/deposit", payload);
+    if (!data.error) await pullPlay();
+    return data;
+  }
+
+  async function apiWithdraw(payload) {
+    const data = await api("POST", "/api/withdraw", payload);
+    if (!data.error) await pullPlay();
+    return data;
+  }
+
+  async function apiProfile(name) {
+    const data = await api("POST", "/api/profile", { name });
+    if (data.me) {
+      snap.me = data.me;
+      write(KEYS.profile, { name: data.me.name, uid: data.me.uid, lastLogin: data.me.lastLogin });
+    }
+    return data;
+  }
+
+  async function apiAdminLogin(user, pass) {
+    const data = await api("POST", "/api/admin/login", { user, pass });
+    if (data.token) {
+      adminToken = data.token;
+      try {
+        sessionStorage.setItem(KEYS.adminSession, JSON.stringify({ ok: true, token: data.token, at: Date.now() }));
+      } catch (e) {}
+    }
+    return data;
+  }
+
+  async function apiLock(payload) {
+    const data = await api("POST", "/api/admin/lock", payload, true);
+    if (!data.error) await pullAdmin(payload && payload.mode);
+    return data;
+  }
+
+  async function apiClear(mode) {
+    const data = await api("POST", "/api/admin/clear", { mode }, true);
+    if (!data.error) await pullAdmin(mode);
+    return data;
+  }
+
+  async function apiGenerateUtr(amount) {
+    const data = await api("POST", "/api/admin/utr", { amount }, true);
+    if (!data.error) await pullAdmin();
+    return data;
+  }
+
+  async function apiReviewDeposit(id, status) {
+    const data = await api("POST", "/api/admin/deposit", { id, status }, true);
+    if (!data.error) await pullAdmin();
+    return data;
+  }
+
+  async function apiReviewWithdraw(id, status) {
+    const data = await api("POST", "/api/admin/withdraw", { id, status }, true);
+    if (!data.error) await pullAdmin();
+    return data;
+  }
+
+  async function apiUserAction(payload) {
+    const data = await api("POST", "/api/admin/user", payload, true);
+    if (!data.error) await pullAdmin();
+    return data;
+  }
+
+  function me() {
+    return snap.me;
+  }
+
+  function getOpenBets() {
+    return snap.openBets || [];
+  }
+
+  function getPlayHistory() {
+    return snap.history || [];
+  }
+
+  function listenLive(fn) {
+    try {
+      const es = new EventSource("/api/events");
+      es.onmessage = function () {
+        if (typeof fn === "function") fn();
+      };
+      return es;
+    } catch (e) {
+      return null;
+    }
+  }
+
   root.YouWinGame = {
     MODES,
     KEYS,
