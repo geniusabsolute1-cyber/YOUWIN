@@ -619,3 +619,34 @@
 <script src="js/app.js?v=20"></script>
 </body>
 </html>
+ multiplier.</li>
+        <li>Place your pick before the last 5 seconds.</li>
+        <li>When the period ends, the result number and colour are shown.</li>
+      </ol>
+      <button class="primary-full" data-action="close-how">Got it</button>
+      <small>Results are drawn at the end of each period</small>
+    </section>
+  </div>
+
+  <div class="result-overlay" id="resultOverlay" hidden data-action="close-result">
+    <div class="result-card" id="resultCard">
+      <div class="result-crest" aria-hidden="true">🏆</div>
+      <h3 id="resultTitle">Congratulations on your winning</h3>
+      <div class="lottery-line">
+        <span>lottery result</span>
+        <div class="result-meta" id="resultMeta"></div>
+      </div>
+      <div class="bonus-slip">
+        <small>bonus</small>
+        <b id="resultBonus">₹0.00</b>
+      </div>
+      <p class="issue-id" id="resultPeriodLabel">Issue:</p>
+      <p class="auto-shut">2s auto shut off</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/game-core.js?v=20"></script>
+<script src="js/app.js?v=20"></script>
+</body>
+</html>
