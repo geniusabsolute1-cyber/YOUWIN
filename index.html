@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#ff646b" />
   <title>YOUWIN — WinGo</title>
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=13" />
   <style>
     html, body {
       width: 100% !important;
@@ -19,15 +19,18 @@
       overflow-x: hidden !important;
       box-sizing: border-box !important;
     }
-    .game-content { padding: 8px 10px 16px !important; }
+    .game-content { padding: 6px 8px 14px !important; }
+    .admin-set-banner, .admin-set-banner[hidden] { display: none !important; }
     .round-tabs {
       display: grid !important;
       grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       gap: 4px !important;
       width: 100% !important;
+      max-width: 100% !important;
     }
-    .round-tab { min-width: 0 !important; overflow: hidden !important; padding: 6px 0 !important; }
-    .round-tab b { font-size: 10px !important; }
+    .round-tab { min-width: 0 !important; overflow: hidden !important; padding: 5px 0 !important; }
+    .round-tab b { font-size: 11px !important; white-space: nowrap !important; }
+    .round-tab small { font-size: 9px !important; }
     .round-tab.active { background: linear-gradient(180deg,#ff8a92,#ff5d64) !important; color:#fff !important; }
     .round-tab.active b, .round-tab.active small { color:#fff !important; }
     .round-status {
@@ -57,22 +60,23 @@
     .number-grid {
       display: grid !important;
       grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-      gap: 6px !important;
+      gap: 4px !important;
       width: 100% !important;
       max-width: 100% !important;
     }
     button.number-ball {
       box-sizing: border-box !important;
       width: 100% !important;
-      max-width: 44px !important;
-      height: 44px !important;
+      max-width: none !important;
+      height: auto !important;
       min-width: 0 !important;
       padding: 0 !important;
-      margin: 0 auto !important;
+      margin: 0 !important;
       border: 0 !important;
-      aspect-ratio: auto !important;
+      aspect-ratio: 1 / 1 !important;
       border-radius: 50% !important;
-      font-size: 15px !important;
+      font-size: 13px !important;
+      justify-self: stretch !important;
     }
     .multiplier-row {
       display: grid !important;
@@ -324,10 +328,10 @@
           </section>
           <div class="notice-bar"><svg class="icon"><use href="#i-speaker"></use></svg><p>If you have not received your withdrawal within <b>3 days</b>, please contact support.</p><button data-action="detail">✦ Detail</button></div>
           <div class="round-tabs" role="tablist" aria-label="WinGo modes" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;">
-            <button class="round-tab active" data-mode="30s"><span class="round-orb red-orb">◷</span><b>WinGo</b><small>30 sec</small></button>
-            <button class="round-tab" data-mode="1m"><span class="round-orb grey-orb">◷</span><b>WinGo 1</b><small>Min</small></button>
-            <button class="round-tab" data-mode="3m"><span class="round-orb grey-orb">◷</span><b>WinGo 3</b><small>Min</small></button>
-            <button class="round-tab" data-mode="5m"><span class="round-orb grey-orb">◷</span><b>WinGo 5</b><small>Min</small></button>
+            <button class="round-tab active" data-mode="30s"><span class="round-orb red-orb">◷</span><b>30s</b><small>WinGo</small></button>
+            <button class="round-tab" data-mode="1m"><span class="round-orb grey-orb">◷</span><b>1 Min</b><small>WinGo</small></button>
+            <button class="round-tab" data-mode="3m"><span class="round-orb grey-orb">◷</span><b>3 Min</b><small>WinGo</small></button>
+            <button class="round-tab" data-mode="5m"><span class="round-orb grey-orb">◷</span><b>5 Min</b><small>WinGo</small></button>
           </div>
           <section class="round-status" id="roundStatus" aria-live="polite">
             <div class="how-play"><button data-action="how"><svg class="icon"><use href="#i-ticket"></use></svg> How to play</button><span class="status-line"></span></div>
@@ -338,10 +342,7 @@
               <div class="timer-digits" id="timerDigits" hidden></div>
               <small id="period">—</small>
             </div>
-            <div class="admin-set-banner" id="adminSetBanner" hidden>
-              <span>Next result locked</span>
-              <strong id="adminSetPreview">7 Green</strong>
-            </div>
+            <div class="admin-set-banner" id="adminSetBanner" hidden></div>
           </section>
           <section class="bet-box" id="gameTitle">
             <div class="bet-heading">
@@ -355,16 +356,16 @@
             </div>
             <div class="pick-label"><span>Or choose a number</span><small>0–9 · 8x</small></div>
             <div class="number-grid" id="numberGrid" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%;max-width:100%;">
-              <button class="number-ball violet-ball" data-pick="0" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">0</button>
-              <button class="number-ball green-ball" data-pick="1" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">1</button>
-              <button class="number-ball red-ball" data-pick="2" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">2</button>
-              <button class="number-ball green-ball" data-pick="3" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">3</button>
-              <button class="number-ball red-violet-ball" data-pick="4" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">4</button>
-              <button class="number-ball violet-ball" data-pick="5" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">5</button>
-              <button class="number-ball red-ball" data-pick="6" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">6</button>
-              <button class="number-ball green-ball" data-pick="7" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">7</button>
-              <button class="number-ball red-ball" data-pick="8" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">8</button>
-              <button class="number-ball green-violet-ball" data-pick="9" style="box-sizing:border-box;width:44px;height:44px;padding:0;margin:0 auto;border:0;border-radius:50%;min-width:0;">9</button>
+              <button class="number-ball violet-ball" data-pick="0">0</button>
+              <button class="number-ball green-ball" data-pick="1">1</button>
+              <button class="number-ball red-ball" data-pick="2">2</button>
+              <button class="number-ball green-ball" data-pick="3">3</button>
+              <button class="number-ball red-violet-ball" data-pick="4">4</button>
+              <button class="number-ball violet-ball" data-pick="5">5</button>
+              <button class="number-ball red-ball" data-pick="6">6</button>
+              <button class="number-ball green-ball" data-pick="7">7</button>
+              <button class="number-ball red-ball" data-pick="8">8</button>
+              <button class="number-ball green-violet-ball" data-pick="9">9</button>
             </div>
             <div class="pick-label stake-label"><span>Multiplier</span><small id="stakeValue">₹1</small></div>
             <div class="multiplier-row" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;width:100%;">
@@ -614,7 +615,7 @@
   </div>
 </div>
 
-<script src="js/game-core.js?v=19"></script>
-<script src="js/app.js?v=19"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3211097dd539aa7',t:'MTc4Nzg5NjUwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script src="js/game-core.js?v=20"></script>
+<script src="js/app.js?v=20"></script>
+</body>
 </html>

@@ -409,8 +409,8 @@ function playSnap(user) {
     clocks: allClocks(),
     openBets: uid ? store.openBets.filter((b) => String(b.uid) === uid) : [],
     history: uid ? store.history.filter((h) => String(h.uid) === uid).slice(0, 40) : [],
-    overrides: store.overrides,
-    force: store.force
+    overrides: {},
+    force: null
   };
 }
 
